@@ -1,7 +1,8 @@
 const express = require('express')
-const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
+const mongoose = require('mongoose')
 const path = require('path')
+
 const booksRoutes = require('./routes/books')
 const authRoutes = require('./routes/auth')
 
@@ -15,7 +16,6 @@ mongoose
    .catch(() => console.log('Connexion à MongoDB échouée !'))
 
 const app = express()
-app.use(bodyParser.json())
 
 //On gère les en-têtes CORS
 app.use((req, res, next) => {
@@ -30,6 +30,8 @@ app.use((req, res, next) => {
    )
    next()
 })
+
+app.use(bodyParser.json())
 
 //routes
 app.use('/api/books', booksRoutes)

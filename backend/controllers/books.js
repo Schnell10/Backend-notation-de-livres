@@ -4,7 +4,7 @@ const fs = require('fs')
 exports.createBook = (req, res, next) => {
    const bookObject = JSON.parse(req.body.book) //on analyse l'objet book qui est convertie en chaîne grâce à JSON.parse()
    delete bookObject._id
-   delete bookObject._userId
+   delete bookObject.userId
    const book = new Book({
       //On crée un objet livre contenant les propriétées contenu dans bookObject,
       ...bookObject,
@@ -14,24 +14,28 @@ exports.createBook = (req, res, next) => {
       imageUrl: `${req.protocol}://${req.get('host')}/images/${
          req.file.filename
       }`,
-      ratings: [],
       averageRating: 0,
    })
 
    book //On enregistre ce nouveau livre dans la base de donnée
       .save()
       .then(() => res.status(201).json({ message: 'Livre enregistré !' }))
-      .catch((error) => res.status(400).json({ error }))
+      .catch((error) => {
+         console.log(error) // Journalisation de l'erreur
+         res.status(400).json({ error })
+      })
 }
 
 exports.addRatingBook = (req, res, next) => {
+   //On vérifie que les notes envoyées dans la requête sont entre 1 et 5
+
    //On crée un objet pour mettre dans le sous tableau ratings
    const ratingObject = {
       userId: req.auth.userId,
       grade: req.body.rating,
    }
    Book.findByIdAndUpdate(
-      req.params.id,
+      { _id: req.params.id },
       //On push l'objet dans le tableau ratings
       { $push: { ratings: ratingObject } },
       //On renvoit l'objet mis à jour
@@ -55,10 +59,19 @@ exports.addRatingBook = (req, res, next) => {
          //On enregistre la valeur averageRatings dans la base de donnée
          book
             .save(book)
-            .then(() => res.status(201).json(book))
+            .then(() => {
+               console.log(req.params.id)
+               res.status(201).json(book)
+            })
             .catch((error) => res.status(401).json({ error }))
       })
-      .catch((error) => res.status(500).json({ error }))
+      .catch((error) => {
+         console.log(req.body)
+         console.log(req.params.id)
+         console.log(req.auth.userId)
+         console.log(error)
+         res.status(500).json({ error })
+      })
 }
 
 exports.getAllBooks = (req, res, next) => {
