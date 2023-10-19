@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 
 module.exports = (req, res, next) => {
    try {
-      //On extrait le token du header (on utilise spleet poru enlever le Bearer)
+      //On extrait le token du header (on utilise split pour enlever le Bearer
       const token = req.headers.authorization.split(' ')[1]
       //On décode le token
       const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET')

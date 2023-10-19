@@ -1,6 +1,7 @@
 const Book = require('../models/Book')
 const fs = require('fs')
 
+//Fonction pour créer un livre
 exports.createBook = (req, res, next) => {
    const bookObject = JSON.parse(req.body.book) //on analyse l'objet book qui est convertie en chaîne grâce à JSON.parse()
    delete bookObject._id
@@ -14,78 +15,84 @@ exports.createBook = (req, res, next) => {
       imageUrl: `${req.protocol}://${req.get('host')}/images/${
          req.file.filename
       }`,
+      //On "Initialise la note moyenne du livre à 0 et le ratingavec un tableau vide" comme c'est demandé dans les spécifications téchniques
+      ratings: [],
       averageRating: 0,
    })
 
    book //On enregistre ce nouveau livre dans la base de donnée
       .save()
       .then(() => res.status(201).json({ message: 'Livre enregistré !' }))
-      .catch((error) => {
-         console.log(error) // Journalisation de l'erreur
-         res.status(400).json({ error })
-      })
+      .catch((error) => res.status(400).json({ error }))
 }
 
+//Fonction pour noter un livre
 exports.addRatingBook = (req, res, next) => {
    //On vérifie que les notes envoyées dans la requête sont entre 1 et 5
+   if (req.body.rating < 1 || req.body.rating > 5) {
+      console.log(error)
+      res.status(400).json({
+         message: 'La note doit être comprise entre 1 et 5',
+      })
+   } else {
+      //On crée un objet pour mettre dans le tableau ratings
+      const ratingObject = {
+         userId: req.auth.userId,
+         grade: req.body.rating,
+      }
+      Book.findById(req.params.id)
+         .then((book) => {
+            //On vérifie grâce à la fonction some() si un utilisater à déjà noté le livre
+            const userHasRated = book.ratings.some(
+               (rating) => rating.userId === req.auth.userId
+            )
+            //Si c'est le cas:
+            if (userHasRated) {
+               return res
+                  .status(400)
+                  .json({ message: "l'utilisateur a déjà noté le livre" })
+            }
+            //On push l'objet dans le tableau ratings
+            book.ratings.push(ratingObject)
+            //On crée un tableau contenant toutes les notes du livre
+            const allRatings = book.ratings.map((rating) => rating.grade)
+            //On additionne toutes ces valeurs.
+            const sumRatings = allRatings.reduce(
+               (total, rating) => total + rating,
+               0
+            )
+            //On fait la moyenne (On affiche maximum 2 chiffres après la virgule)
+            const averageRatings =
+               Math.round((sumRatings / allRatings.length) * 100) / 100
 
-   //On crée un objet pour mettre dans le sous tableau ratings
-   const ratingObject = {
-      userId: req.auth.userId,
-      grade: req.body.rating,
+            // On met à jour la propriété averageRatings de l'objet book
+            book.averageRating = averageRatings
+
+            //On enregistre les nouvelles valeurs dans la base de donnée
+            book
+               .save()
+               .then((book) => res.status(201).json(book))
+               .catch((error) => res.status(401).json({ error }))
+         })
+         .catch((error) => res.status(500).json({ error }))
    }
-   Book.findByIdAndUpdate(
-      { _id: req.params.id },
-      //On push l'objet dans le tableau ratings
-      { $push: { ratings: ratingObject } },
-      //On renvoit l'objet mis à jour
-      { new: true }
-   )
-      .then((book) => {
-         //On crée un tableau contenant toutes les notes du livre
-         const allRatings = book.ratings.map((rating) => rating.grade)
-         //On additionne toutes ces valeurs.
-         const sumRatings = allRatings.reduce(
-            (total, rating) => total + rating,
-            0
-         )
-         //On fait la moyenne (On affiche maximum 2 chiffres après la virgule)
-         const averageRatings =
-            Math.round((sumRatings / allRatings.length) * 100) / 100
-
-         // On met à jour la propriété averageRatings de l'objet book
-         book.averageRating = averageRatings
-
-         //On enregistre la valeur averageRatings dans la base de donnée
-         book
-            .save(book)
-            .then(() => {
-               console.log(req.params.id)
-               res.status(201).json(book)
-            })
-            .catch((error) => res.status(401).json({ error }))
-      })
-      .catch((error) => {
-         console.log(req.body)
-         console.log(req.params.id)
-         console.log(req.auth.userId)
-         console.log(error)
-         res.status(500).json({ error })
-      })
 }
 
+//Fonction pour récupérer tout les livre
 exports.getAllBooks = (req, res, next) => {
    Book.find()
       .then((books) => res.status(200).json(books))
       .catch((error) => res.status(400).json({ error }))
 }
 
+//Fontion pour récupérer un seul livre
 exports.getOneBook = (req, res, next) => {
    Book.findOne({ _id: req.params.id }) //On se sert de l'id de la req pour récupérer les données dans la base de données
       .then((book) => res.status(200).json(book))
       .catch((error) => res.status(404).json({ error }))
 }
 
+//Fonction pour récupérer les 3 livres les mieux notés
 exports.getThreeBestBooks = (req, res, next) => {
    //Mauvais code en attendans
    Book.find()
@@ -95,6 +102,7 @@ exports.getThreeBestBooks = (req, res, next) => {
       .catch((error) => res.status(500).json({ error }))
 }
 
+//Fonction pour modifier un livre
 exports.modifyBook = (req, res, next) => {
    const bookObject = req.file
       ? //On fait une condition: si dans la requête il y a un fichier,
@@ -129,6 +137,7 @@ exports.modifyBook = (req, res, next) => {
       })
 }
 
+//Fonction pour supprimer un livre
 exports.deleteBook = (req, res, next) => {
    Book.findOne({ _id: req.params.id }) //On récupère l'objet de la base de donnée grâce à son id
       .then((book) => {
