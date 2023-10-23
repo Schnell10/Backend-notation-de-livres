@@ -23,7 +23,11 @@ exports.createBook = (req, res, next) => {
    book //On enregistre ce nouveau livre dans la base de donnée
       .save()
       .then(() => res.status(201).json({ message: 'Livre enregistré !' }))
-      .catch((error) => res.status(400).json({ error }))
+      .catch((error) => {
+         //On supprime l'image enregistrer par le middleware multer si jamais il y a une erreur
+         fs.unlinkSync(`images/${req.file.filename}`)
+         res.status(400).json({ error })
+      })
 }
 
 //Fonction pour noter un livre
@@ -105,7 +109,7 @@ exports.getThreeBestBooks = (req, res, next) => {
 //Fonction pour modifier un livre
 exports.modifyBook = (req, res, next) => {
    const bookObject = req.file
-      ? //On fait une condition: si dans la requête il y a un fichier,
+      ? //On fait une condition: si dans la requête il y a un fichier:
         //on analyse l'objet book qui est convertie en chaîne grâce à JSON.parse() et on reconstitue l'url de l'image
         {
            ...JSON.parse(req.body.book),
@@ -116,23 +120,37 @@ exports.modifyBook = (req, res, next) => {
       : //Si la requête ne contien pas de fichier on traite simplement l'objet entrant
         { ...req.body }
 
-   delete bookObject._userId
+   delete bookObject.userId
    Book.findOne({ _id: req.params.id }) //On récupère l'objet de la base de donnée grâce à son id
       .then((book) => {
          if (book.userId != req.auth.userId) {
             //On vérifie si c'est bien l'utilisateur qui à crée cette objet
             res.status(403).json({ message: 'Not authorized' })
          } else {
+            //Si c'est le cas, on modifie l'objet (et on supprime l'ancienne image de l'objet de notre dossier images)
             Book.updateOne(
-               //Si c'est le cas, on modifie l'objet
                { _id: req.params.id },
                { ...bookObject, _id: req.params.id }
             )
-               .then(() => res.status(200).json({ message: 'Livre modifié !' }))
-               .catch((error) => res.status(401).json({ error }))
+               .then(() => {
+                  if (req.file) {
+                     const fileName = book.imageUrl.split('/images/')[1]
+                     fs.unlinkSync(`images/${fileName}`)
+                     res.status(200).json({ message: 'Livre modifié !' })
+                  } else {
+                     res.status(200).json({ message: 'Livre modifié !' })
+                  }
+               })
+               .catch((error) => {
+                  //Si il y a une erreur on supprime le fichier telecharger
+                  fs.unlinkSync(`images/${req.file.filename}`)
+                  res.status(401).json({ error })
+               })
          }
       })
       .catch((error) => {
+         //Si il y a une erreur on supprime le fichier telecharger
+         fs.unlinkSync(`images/${req.file.filename}`)
          res.status(400).json({ error })
       })
 }

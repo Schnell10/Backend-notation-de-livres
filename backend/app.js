@@ -1,4 +1,5 @@
 const express = require('express')
+require('dotenv').config()
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const path = require('path')
@@ -6,12 +7,14 @@ const path = require('path')
 const booksRoutes = require('./routes/books')
 const authRoutes = require('./routes/auth')
 
+//On récupére le mdp mongoDb du fichier .env
+const mongoDbPassword = process.env.mongoDbPassword
 //On connecte notre serveur à mongoDB
 mongoose
-   .connect(
-      'mongodb+srv://pierreschnell:KawpvfOpJigpW9b2@cluster0.imkg8df.mongodb.net/?retryWrites=true&w=majority&appName=AtlasApp',
-      { useNewUrlParser: true, useUnifiedTopology: true }
-   )
+   .connect(mongoDbPassword, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+   })
    .then(() => console.log('Connexion à MongoDB réussie !'))
    .catch(() => console.log('Connexion à MongoDB échouée !'))
 
@@ -36,6 +39,7 @@ app.use(bodyParser.json())
 //routes
 app.use('/api/books', booksRoutes)
 app.use('/api/auth', authRoutes)
-app.use('/images', express.static(path.join(__dirname, 'images'))) //indique à Express qu'il faut gérer la ressource images de manière statique à chaque fois qu'elle reçoit une requête vers la route /images
+//On indique à Express qu'il faut gérer la ressource images de manière statique à chaque fois qu'elle reçoit une requête vers la route /images
+app.use('/images', express.static(path.join(__dirname, 'images')))
 
 module.exports = app
