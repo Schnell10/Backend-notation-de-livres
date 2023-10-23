@@ -33,7 +33,7 @@ exports.createBook = (req, res, next) => {
 //Fonction pour noter un livre
 exports.addRatingBook = (req, res, next) => {
    //On vérifie que les notes envoyées dans la requête sont entre 1 et 5
-   if (req.body.rating < 1 || req.body.rating > 5) {
+   if (req.body.rating < 0 || req.body.rating > 5) {
       console.log(error)
       res.status(400).json({
          message: 'La note doit être comprise entre 1 et 5',
@@ -125,7 +125,7 @@ exports.modifyBook = (req, res, next) => {
       .then((book) => {
          if (book.userId != req.auth.userId) {
             //On vérifie si c'est bien l'utilisateur qui à crée cette objet
-            res.status(403).json({ message: 'Not authorized' })
+            res.status(403).json({ message: 'unauthorized request' })
          } else {
             //Si c'est le cas, on modifie l'objet (et on supprime l'ancienne image de l'objet de notre dossier images)
             Book.updateOne(
@@ -161,7 +161,7 @@ exports.deleteBook = (req, res, next) => {
       .then((book) => {
          //On vérifie si c'est bien l'utilisateur qui à crée cette objet
          if (book.userId != req.auth.userId) {
-            res.status(403).json({ message: 'Not authorized' })
+            res.status(403).json({ message: 'unauthorized request' })
          } else {
             const filename = book.imageUrl.split('/images/')[1] //On récupère le nom de notre fichier (à la suite de /images/)
             fs.unlink(`images/${filename}`, () => {
