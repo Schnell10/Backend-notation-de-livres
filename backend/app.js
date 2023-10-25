@@ -1,4 +1,5 @@
 const express = require('express')
+const helmet = require('helmet')
 require('dotenv').config()
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
@@ -19,6 +20,9 @@ mongoose
    .catch(() => console.log('Connexion à MongoDB échouée !'))
 
 const app = express()
+
+// Utilisez Helmet comme middleware  (c'est une librairie JavaScript qui offre un ensemble de fonctions middleware pour renforcer la sécurité en ajoutant des en-têtes HTTP de sécurité)
+app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }))
 
 //On gère les en-têtes CORS
 app.use((req, res, next) => {

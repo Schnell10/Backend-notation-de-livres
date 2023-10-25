@@ -161,7 +161,7 @@ exports.deleteBook = (req, res, next) => {
       .then((book) => {
          //On vérifie si c'est bien l'utilisateur qui à crée cette objet
          if (book.userId != req.auth.userId) {
-            res.status(403).json({ message: 'unauthorized request' })
+            res.status(403).json({ message: 'unauthorized request²' })
          } else {
             const filename = book.imageUrl.split('/images/')[1] //On récupère le nom de notre fichier (à la suite de /images/)
             fs.unlink(`images/${filename}`, () => {
