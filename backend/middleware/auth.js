@@ -3,7 +3,7 @@ require('dotenv').config()
 
 module.exports = (req, res, next) => {
    try {
-      //On extrait le token du header (on utilise split pour enlever le Bearer
+      //On extrait le token du header (on utilise split pour enlever le Bearer)
       const token = req.headers.authorization.split(' ')[1]
       //On récupére le secret token de .env
       const secretToken = process.env.secretToken

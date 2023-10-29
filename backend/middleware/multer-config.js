@@ -9,7 +9,7 @@ const storage = multer.memoryStorage()
 const handleFileUpload = multer({ storage: storage }).single('image')
 
 const convertAndSaveToWebP = (req, res, next) => {
-   //On gére le téléchargement du fichier grâce au middleware handleFileUpload
+   //On gére le téléchargement du fichier grâce à handleFileUpload
    handleFileUpload(req, res, (uploadError) => {
       //Si une erreur est appellé:
       if (uploadError) {
@@ -29,16 +29,16 @@ const convertAndSaveToWebP = (req, res, next) => {
          const mimeType = req.file.mimetype
 
          if (!allowedMimeTypes.includes(mimeType)) {
-            //On fait une condition pour vérifier que le fichier envoyé soit au bon format
+            //On fait une condition pour vérifier que le fichier soit au bon format
             return res.status(400).json({
                message:
                   'Seules les images au format JPG, JPEG, PNG ou WebP sont autorisées.',
             })
          }
 
-         sharp(req.file.buffer) //On utilise sharp pour redimensionner le fichier et convertie en webp
+         sharp(req.file.buffer) //On utilise sharp pour redimensionner le fichier et convertir en webp
             .resize(400, 500)
-            .toFormat('webp')
+            .webp({ quality: 40 })
             .toBuffer()
             .then((webpBuffer) => {
                //On renome le fichier enregistré en mémoire sous forme de tampon
@@ -50,6 +50,7 @@ const convertAndSaveToWebP = (req, res, next) => {
                return fs
                   .writeFile(filePath, webpBuffer) //On enregistre le contenu du tampon (webBuffer) dans un fichier sur la destination défini (filePath)
                   .then(() => {
+                     //On modifie les données de la requête pour pouvoir la traiter avec d'autre middleware ou controllers
                      req.file = {
                         ...req.file,
                         path: filePath, //On remplace le chemin du fichier de la requête

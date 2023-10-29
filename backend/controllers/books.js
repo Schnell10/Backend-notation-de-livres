@@ -3,7 +3,7 @@ const fs = require('fs')
 
 //Fonction pour créer un livre
 exports.createBook = (req, res, next) => {
-   const bookObject = JSON.parse(req.body.book) //on analyse l'objet book qui est convertie en chaîne grâce à JSON.parse()
+   const bookObject = JSON.parse(req.body.book) //on analyse l'objet book qui est convertie en chaîne, grâce à JSON.parse()
    delete bookObject._id
    delete bookObject.userId
    const book = new Book({
@@ -11,7 +11,7 @@ exports.createBook = (req, res, next) => {
       ...bookObject,
       //on change l'userId par l'id extrait du header de la requête pour plus de sécurité
       userId: req.auth.userId,
-      //On récupère l'adress url de l'image reçu dans la requête
+      //On récupère l'adress url de l'image reçu dans la requête (enregistrée dans le dossier images grâce au middleware multer-config)
       imageUrl: `${req.protocol}://${req.get('host')}/images/${
          req.file.filename
       }`,
@@ -56,7 +56,7 @@ exports.addRatingBook = (req, res, next) => {
                   .status(400)
                   .json({ message: "l'utilisateur a déjà noté le livre" })
             }
-            //On push l'objet dans le tableau ratings
+            //Sinon, on push l'objet dans le tableau ratings
             book.ratings.push(ratingObject)
             //On crée un tableau contenant toutes les notes du livre
             const allRatings = book.ratings.map((rating) => rating.grade)
@@ -98,7 +98,6 @@ exports.getOneBook = (req, res, next) => {
 
 //Fonction pour récupérer les 3 livres les mieux notés
 exports.getThreeBestBooks = (req, res, next) => {
-   //Mauvais code en attendans
    Book.find()
       .sort({ averageRating: -1 }) // Tri par note moyenne décroissante
       .limit(3) // Limitez à trois résultats
@@ -165,7 +164,7 @@ exports.deleteBook = (req, res, next) => {
          } else {
             const filename = book.imageUrl.split('/images/')[1] //On récupère le nom de notre fichier (à la suite de /images/)
             fs.unlink(`images/${filename}`, () => {
-               //on utilise la fonction unLing de fs (package node pour pouvoir modifier les fichiers) pour supprimer le fichier
+               //on utilise la fonction unLink de fs (package node pour pouvoir modifier les fichiers) pour supprimer le fichier
                Book.deleteOne({ _id: req.params.id }) //Puis on supprime l'objet de la base de donnée
                   .then(() =>
                      res.status(200).json({ message: 'Livre supprimé !' })

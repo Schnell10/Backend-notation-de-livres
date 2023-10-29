@@ -11,11 +11,11 @@ module.exports = (req, res, next) => {
       return res.status(400).json({ message: 'Adresse email non valide' })
    }
 
-   // On vérifie que le mot de passe est composé d'au moins 6 caractères et soit différent de l'email.
+   // On vérifie que le mot de passe est composé d'au moins 8 caractères et soit différent de l'email.
    if (req.body.password.length < 7 || req.body.password === req.body.email) {
       return res.status(400).json({
          message:
-            "Mot de passe non valide, il dois contenir plus de 8 caractères ou être différent de l'email",
+            "Mot de passe non valide, il dois contenir au moins 8 caractères ou être différent de l'email",
       })
    }
 
