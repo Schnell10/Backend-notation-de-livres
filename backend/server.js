@@ -1,4 +1,4 @@
-const http = require('http')
+const http = require('http') //module HTTP inclus dans Node.js
 const app = require('./app')
 
 //normalizePort renvoie un port valide, qu'il soit fourni sous la forme d'un numéro ou d'une chaîne
@@ -42,7 +42,7 @@ const errorHandler = (error) => {
    }
 }
 
-//On crée un serveur HTTP en utilisant notre application Express
+//On crée un serveur HTTP qui utilise notre application Express
 const server = http.createServer(app)
 //On gére les erreurs du serveur
 server.on('error', errorHandler)

@@ -6,6 +6,7 @@ exports.createBook = (req, res, next) => {
    const bookObject = JSON.parse(req.body.book) //on analyse l'objet book qui est convertie en chaîne, grâce à JSON.parse()
    delete bookObject._id
    delete bookObject.userId
+   //Création d'une nouvelle instance de modèle book
    const book = new Book({
       //On crée un objet livre contenant les propriétées contenu dans bookObject,
       ...bookObject,

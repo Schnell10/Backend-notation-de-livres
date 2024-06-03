@@ -16,6 +16,6 @@ module.exports = (req, res, next) => {
       }
       next() //On ajoute next() pour passer au middleware suivant
    } catch (error) {
-      res.status(401).json({ error })
+      res.status(401).json({ error: 'Unauthorized: Missing or invalid token.' })
    }
 }

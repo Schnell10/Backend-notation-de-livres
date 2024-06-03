@@ -13,8 +13,8 @@ const mongoDbPassword = process.env.mongoDbPassword
 //On connecte notre serveur à mongoDB
 mongoose
    .connect(mongoDbPassword, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      useNewUrlParser: true, //activer le nouveau parseur d'URL
+      useUnifiedTopology: true, //active l'utilisation du nouveau moteur de découverte et de surveillance de serveur dans Mongoose
    })
    .then(() => console.log('Connexion à MongoDB réussie !'))
    .catch(() => console.log('Connexion à MongoDB échouée !'))
@@ -40,7 +40,9 @@ app.use((req, res, next) => {
    next()
 })
 
-app.use(bodyParser.json()) //middleware pour analyser le contenu JSON des requêtes
+//middleware pour analyser le contenu JSON des requêtes
+//(extrait les données JSON de la demande entrante et les rend disponibles dans un format JavaScript)
+app.use(bodyParser.json())
 
 //routes
 app.use('/api/books', booksRoutes)

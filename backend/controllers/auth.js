@@ -9,6 +9,7 @@ exports.signup = (req, res, next) => {
       .hash(req.body.password, 10)
       //Puis on crée l'utilisateur en l'enregistrant dans la base de donnée avec le mdp hashé
       .then((hash) => {
+         //Création d'une nouvelle instance de modèle utilisateur
          const user = new User({
             email: req.body.email,
             password: hash,
