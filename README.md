@@ -19,3 +19,7 @@
 
 - Intégration réussie de Multer et Sharp pour la gestion des images
 - Conception et mise en place d'une API robuste pour les fonctionnalités principales du site
+
+## Lien vers le site
+
+[Accédez au site ici](https://backend-notation-de-livres.vercel.app/)
